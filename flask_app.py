@@ -57,17 +57,17 @@ def handle_dialog(req, res):
                 "Не буду.",
                 "Отстань!",
             ],
-            "animal": "слона"
+            "stage": "elephant"
         }
         res["response"]["text"] = "Привет! Купи слона!"
         res["response"]["buttons"] = get_suggests(user_id)
         return
 
     if is_agreement(req["request"]["original_utterance"]):
-        current_animal = sessionStorage[user_id].get("animal", "слона")
+        stage = sessionStorage[user_id].get("stage", "elephant")
         
-        if current_animal == "слона":
-            sessionStorage[user_id]["animal"] = "кролика"
+        if stage == "elephant":
+            sessionStorage[user_id]["stage"] = "rabbit"
             sessionStorage[user_id]["suggests"] = [
                 "Не хочу.",
                 "Не буду.",
@@ -75,16 +75,20 @@ def handle_dialog(req, res):
             ]
             res["response"]["text"] = "Отлично! А теперь купи кролика!"
             res["response"]["buttons"] = get_suggests(user_id)
-        else:
+            return
+        elif stage == "rabbit":
             res["response"]["text"] = "Спасибо за покупки! Заходите ещё!"
             res["response"]["end_session"] = True
-        return
+            return
 
-    res["response"]["text"] = f"Все говорят '{req['request']['original_utterance']}', а ты купи {sessionStorage[user_id].get('animal', 'слона')}!"
+    animal = "слона" if sessionStorage[user_id].get("stage", "elephant") == "elephant" else "кролика"
+    res["response"]["text"] = f"Все говорят '{req['request']['original_utterance']}', а ты купи {animal}!"
     res["response"]["buttons"] = get_suggests(user_id)
 
 def get_suggests(user_id):
     session = sessionStorage[user_id]
+    stage = session.get("stage", "elephant")
+    search_text = "слон" if stage == "elephant" else "кролик"
 
     suggests = [{"title": suggest, "hide": True} for suggest in session["suggests"][:2]]
 
@@ -95,7 +99,7 @@ def get_suggests(user_id):
         suggests.append(
             {
                 "title": "Ладно",
-                "url": "https://market.yandex.ru/search?text=слон",
+                "url": f"https://market.yandex.ru/search?text={search_text}",
                 "hide": True,
             }
         )
