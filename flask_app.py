@@ -27,10 +27,8 @@ def main():
     return jsonify(response)
 
 def is_agreement(text):
-    """Проверяет, является ли текст согласием купить слона"""
     text_lower = text.lower()
     
-    # Точные совпадения
     exact_matches = [
         "ладно",
         "куплю",
@@ -44,7 +42,6 @@ def is_agreement(text):
     if text_lower in exact_matches:
         return True
     
-    # Проверка фраз с "я"
     if re.match(r'^я\s+(куплю|покупаю)$', text_lower):
         return True
     
@@ -59,18 +56,31 @@ def handle_dialog(req, res):
                 "Не хочу.",
                 "Не буду.",
                 "Отстань!",
-            ]
+            ],
+            "animal": "слона"
         }
         res["response"]["text"] = "Привет! Купи слона!"
         res["response"]["buttons"] = get_suggests(user_id)
         return
 
     if is_agreement(req["request"]["original_utterance"]):
-        res["response"]["text"] = "Слона можно найти на Яндекс.Маркете!"
-        res["response"]["end_session"] = True
+        current_animal = sessionStorage[user_id].get("animal", "слона")
+        
+        if current_animal == "слона":
+            sessionStorage[user_id]["animal"] = "кролика"
+            sessionStorage[user_id]["suggests"] = [
+                "Не хочу.",
+                "Не буду.",
+                "Отстань!",
+            ]
+            res["response"]["text"] = "Отлично! А теперь купи кролика!"
+            res["response"]["buttons"] = get_suggests(user_id)
+        else:
+            res["response"]["text"] = "Спасибо за покупки! Заходите ещё!"
+            res["response"]["end_session"] = True
         return
 
-    res["response"]["text"] = f"Все говорят '{req['request']['original_utterance']}', а ты купи слона!"
+    res["response"]["text"] = f"Все говорят '{req['request']['original_utterance']}', а ты купи {sessionStorage[user_id].get('animal', 'слона')}!"
     res["response"]["buttons"] = get_suggests(user_id)
 
 def get_suggests(user_id):
