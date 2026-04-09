@@ -77,7 +77,7 @@ def handle_dialog(req, res):
             res["response"]["buttons"] = get_suggests(user_id)
             return
         elif stage == "rabbit":
-            res["response"]["text"] = "Спасибо за покупки! Заходите ещё!"
+            res["response"]["text"] = "Кролика можно купить на Яндекс маркете!"
             res["response"]["end_session"] = True
             return
 
